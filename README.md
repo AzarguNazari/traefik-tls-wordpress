@@ -60,8 +60,6 @@ services:
       - ./letsencrypt:/letsencrypt # <== Volume for certs (TLS)
       - /var/run/docker.sock:/var/run/docker.sock # <== Volume for docker admin
       - ./config/dynamic.yaml:/dynamic.yaml # <== Volume for dynamic conf file, **ref: line 27
-    networks:
-      - web # <== Placing traefik on the network named web, to access containers on this network
     labels:
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
@@ -83,9 +81,6 @@ services:
       WORDPRESS_DB_NAME: exampledb
     volumes:
       - wordpress:/var/www/html
-    networks:
-      - web
-      - backend
     labels:
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       - "traefik.enable=true" # <== Enable traefik to proxy this container
@@ -109,18 +104,17 @@ services:
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
     volumes:
       - db:/var/lib/mysql
-    networks:
-      - backend
-
-networks:
-  web:
-    external: true
-  backend:
-    external: false
-
-  volumes:
-    wordpress:
-      external: true
-    db:
-      external: true
+    
+volumes:
+  wordpress:
+  db:
 ```
+
+For the redirect file (https scheme configuration). you can have it as `config/dynamic.yaml`:
+```
+http:
+  middlewares:
+    redirect:
+      redirectScheme:
+        scheme: https
+``
